@@ -6,7 +6,7 @@ services:
     networks:
       - right
       - left
-    command: --smallfiles --oplogSize 128
+    command: --smallfiles --oplogSize 256
 
   rocketchat:
     image: rocket.chat:latest
@@ -34,24 +34,28 @@ services:
     image: busybox:latest
     networks:
       - left
+#      - pingers
     depends_on:
       - mongo
       - rocketchat
       - ignitechat
-    command: ping -c 2 rocketchat
+    command: ping -c 3 rightbusy
 
   rightbusy:
     image: busybox:latest
     networks:
       - right
+#      - pingers
     depends_on:
       - mongo
       - rocketchat
       - ignitechat
-    command: ping -c 3 ignitechat
+    command: ping -c 3 leftbusy
 
 networks:
   right:
     driver: bridge
   left:
     driver: bridge
+#  pingers:
+#    driver: bridge
