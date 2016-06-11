@@ -1,0 +1,76 @@
+# Ep4
+docker build -t "streamweaver/dfdemo:0.1" .
+
+docker run -d -p 80:5000 --name dfdemo80 streamweaver/dfdemo:0.1
+
+docker run -d -p 8080:5000 \
+    --name dfdemo8080 \
+    -e "FLASK_INSTANCE_NAME=DFDEMO80" \
+    streamweaver/dfdemo:0.1
+
+docker run -d -p 8081:5000 \
+    --name dfdemo8081 \
+    -e "FLASK_INSTANCE_NAME=DFDEMO80" \
+    -e "FLASK_APP_NAME=Overriding Title Example" \
+    streamweaver/dfdemo:0.1
+
+# EP 5
+
+docker run -d --name=publicweb -p 80:5000 streamweaver/dfdemo:0.1
+
+docker run -d --name=closedweb -p 8080:5000 --net=none streamweaver/dfdemo:0.1
+
+docker network ls
+
+docker network create demo
+
+docker run
+
+docker network create back-tier
+
+docker run -d --name=flaskapp streamweaver/dfdemo:0.1
+
+docker run --rm -i busybox ping -c 5 flaskapp
+
+docker run --rm --net=back-tier -i busybox ping -c 5 flaskapp
+
+docker run --rm --net=back-tier -i appropriate/curl http://flaskapp:5000/
+
+docker network connect back-tier flaskapp
+
+docker run --rm -i busybox ping -c 5 flaskapp
+
+docker run --rm --net=back-tier -i busybox ping -c 5 flaskapp
+
+docker run --rm --net=back-tier -i appropriate/curl http://flaskapp:5000/
+
+docker run --rm -i appropriate/curl http://192.168.99.100:5000/
+
+docker run --rm --net=back-tier -i appropriate/curl http://192.168.99.100:5000/
+
+docker-compose up
+
+docker run --rm --net=dnetworkdemo_nsq appropriate/curl -d 'hello world 1' 'http://nsqd:4151/put?topic=backtier_mq'
+
+### For Ep 6
+docker network create back-tier
+
+docker run -d --name=nsqlookupd --net=back-tier nsqio/nsq /nsqlookupd
+
+docker run -d --name=nsqd --net=back-tier nsqio/nsq /nsqd --lookupd-tcp-address=nsqlookupd:4160
+
+docker run -d --name=nsqadmin --net=back-tier -p 4171:4171 nsqio/nsq /nsqadmin --lookupd-http-address=nsqlookupd:4160
+
+curl -d 'hello world 1' 'http://nsqd:4151/put?topic=backtier_mq'
+
+####
+
+docker run -it -e ROCKETCHAT_URL=192.168.99.100 \
+    -e ROCKETCHAT_ROOM='' \
+    -e LISTEN_ON_ALL_PUBLIC=true \
+    -e ROCKETCHAT_USER=bot \
+    -e ROCKETCHAT_PASSWORD=bot \
+    -e ROCKETCHAT_AUTH=password \
+    -e BOT_NAME=bot \
+    -e EXTERNAL_SCRIPTS=hubot-pugme,hubot-help \
+    rocketchat/hubot-rocketchat

@@ -1,0 +1,57 @@
+version: '2'
+
+services:
+  mongo:
+    image: mongo:3.0
+    networks:
+      - right
+      - left
+    command: --smallfiles --oplogSize 128
+
+  rocketchat:
+    image: rocket.chat:latest
+    ports:
+      - "80:3000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/rocketchat
+    depends_on:
+      - mongo
+    networks:
+      - right
+
+  ignitechat:
+    image: rocket.chat:latest
+    ports:
+      - "8080:3000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/ignitechat
+    depends_on:
+      - mongo
+    networks:
+      - left
+
+  leftbusy:
+    image: busybox:latest
+    networks:
+      - left
+    depends_on:
+      - mongo
+      - rocketchat
+      - ignitechat
+    command: ping -c 2 rocketchat
+
+  rightbusy:
+    image: busybox:latest
+    networks:
+      - right
+    depends_on:
+      - mongo
+      - rocketchat
+      - ignitechat
+    command: ping -c 3 ignitechat
+
+networks:
+  right:
+    driver: bridge
+  left:
+    driver: bridge
